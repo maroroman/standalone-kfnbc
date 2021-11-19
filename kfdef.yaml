@@ -1,0 +1,33 @@
+apiVersion: kfdef.apps.kubeflow.org/v1
+kind: KfDef
+metadata:
+  annotations:
+    kfctl.kubeflow.io/force-delete: "false"
+  creationTimestamp: null
+  name: kfnbc
+  namespace: kfnbc
+spec:
+  applications:
+  - kustomizeConfig:
+      repoRef:
+        name: manifests
+        path: apps/jupyter/jupyter-web-app
+    name: jupyter-web-app
+  - kustomizeConfig:
+      overlays:
+      - standalone
+      repoRef:
+        name: manifests
+        path: apps/jupyter/notebook-controller
+    name: notebook-controller
+  - kustomizeConfig:
+      overlays:
+      - standalone
+      repoRef:
+        name: manifests
+        path: apps/profiles
+    name: profiles
+  repos:
+  - name: manifests
+    uri: https://github.com/kubeflow/manifests/tarball/master
+  version: master
