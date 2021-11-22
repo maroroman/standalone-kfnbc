@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: jwa
+  labels:
+    app: jupyter-web-app
+  annotations:
+    haproxy.router.openshift.io/rewrite-target: /
+spec:
+  to:
+    kind: Service
+    name: jupyter-web-app-service
+    weight: 100
+  port:
+    targetPort: oauth-proxy
+  tls:
+    termination: Reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

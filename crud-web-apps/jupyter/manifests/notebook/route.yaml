@@ -1,0 +1,22 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: scipy-notebook
+  labels:
+    notebooks.kubeflow.org/name: scipy
+spec:
+  # Set namespaceOwnership to InterNamespaceAllowed (insecure):
+  # https://docs.openshift.com/container-platform/4.9/networking/ingress-operator.html#nw-route-admission-policy_configuring-ingress
+  host: jwa-notebook-controller-ui.apps.svelosol.dev.datahub.redhat.com
+  path: /notebook/kubeflow-user/scipy
+  to:
+    kind: Service
+    name: scipy-notebook
+    weight: 100
+  port:
+    targetPort: oauth-proxy
+  tls:
+    termination: Reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

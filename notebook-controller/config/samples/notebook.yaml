@@ -1,0 +1,91 @@
+---
+apiVersion: kubeflow.org/v1alpha1
+kind: Notebook
+metadata:
+  name: tensorflow
+spec:
+  template:
+    spec:
+      containers:
+        - name: notebook
+          image: gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.0
+          args:
+            [
+              "start.sh",
+              "lab",
+              "--LabApp.token=''",
+              "--LabApp.allow_remote_access='True'",
+              "--LabApp.allow_root='True'",
+              "--LabApp.ip='*'",
+              "--LabApp.base_url=/test/my-notebook/",
+              "--port=8888",
+              "--no-browser",
+            ]
+
+---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: notebook-controller-fsgroup
+  annotations:
+    kubernetes.io/description:
+      Allow Kubeflow notebooks to use fsGroup 100.
+allowHostDirVolumePlugin: true
+allowHostIPC: false
+allowHostNetwork: true
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: false
+allowedCapabilities: null
+defaultAddCapabilities: null
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 100
+      max: 100
+priority: null
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+  - KILL
+  - MKNOD
+  - SETUID
+  - SETGID
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: MustRunAs
+volumes:
+  - downwardAPI
+  - hostPath
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: notebook-controller-fsgroup
+rules:
+  - apiGroups:
+      - security.openshift.io
+    resources:
+      - securitycontextconstraints
+    verbs:
+      - use
+    resourceNames:
+      - privileged
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: notebook-controller-fsgroup
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: notebook-controller-fsgroup
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: notebook-controller-system
